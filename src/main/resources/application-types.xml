@@ -25,4 +25,13 @@ type qc_system_api_batches_json = Array<{|  BatchId: String,   StartDate: String
       </types:input-event>
     </types:processor-declaration>
   </types:enrichment>
+  <types:enrichment select="#d66db11a-8e98-4756-b10b-177354f0959d">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="qc_system_api_notes_json"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
 </types:mule>
