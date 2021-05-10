@@ -1,0 +1,28 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
+  <types:catalog>
+    <types:type name="qc_system_api_notes_json" format="json">
+      <types:shape format="weave" example="caliberNotes.json"><![CDATA[%dw 2.0
+
+type qc_system_api_notes_json = Array<{|  AssociateId: String,   BatchId: String,   Content: String,   CreatedOn: String,   EmployeeId: String,   LastUpdated: String,   NoteId: Number {"typeId": "int"},   TechnicalStatus: String,   Type: String,   Week: Number {"typeId": "int"}|}> {"example": "[{\\\"AssociateId\\\":\\\"TR-EE\\\",\\\"BatchId\\\":\\\"TR-1201\\\",\\\"Content\\\":\\\"This is a Qc batch note on week 1\\\",\\\"CreatedOn\\\":\\\"2021-04-22\\\",\\\"EmployeeId\\\":\\\"QC-User\\\",\\\"LastUpdated\\\":\\\"2021-04-28\\\",\\\"NoteId\\\":982,\\\"TechnicalStatus\\\":\\\"Poor\\\",\\\"Type\\\":\\\"QC_BATCH\\\",\\\"Week\\\":1}]"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="qc_system_api_batches_json" format="json">
+      <types:shape format="weave" example="batches.json"><![CDATA[%dw 2.0
+
+type qc_system_api_batches_json = Array<{|  BatchId: String,   StartDate: String,   EndDate: String|}> {"example": "[{\\\"BatchId\\\":\\\"TR-1201\\\",\\\"StartDate\\\":\\\"2021-02-22\\\",\\\"EndDate\\\":\\\"2021-05-15\\\"},{\\\"BatchId\\\":\\\"TR-1201\\\",\\\"StartDate\\\":\\\"2021-01-01\\\",\\\"EndDate\\\":\\\"2021-03-15\\\"}]"}
+
+]]></types:shape>
+    </types:type>
+  </types:catalog>
+  <types:enrichment select="#b047cd2b-6c8d-41ef-993a-8128f3c63ee2">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="qc_system_api_notes_json"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+</types:mule>

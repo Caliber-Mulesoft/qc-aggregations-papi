@@ -1,0 +1,357 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:qc-system-api="http://www.mulesoft.org/schema/mule/qc-system-api"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/qc-system-api http://www.mulesoft.org/schema/mule/qc-system-api/current/mule-qc-system-api.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="3c59ae73-abb5-404b-a43e-b15d9b709d16" >
+		<http:listener-connection host="0.0.0.0" port="8083" />
+	</http:listener-config>
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="94288cc2-2a92-476e-8682-d31fa11b1abc">
+		<http:request-connection host="localhost" port="3000" />
+	</http:request-config>
+	<flow name="get-all-time-percentage" doc:id="2d25de46-d9e2-4d69-9fa0-934a68ff59ae">
+		<qc-system-api:get-notes doc:name="Get Notes" doc:id="0553fdcd-49d5-4d6e-aa0f-9dcd77bf3f52" config-ref="QC_System_API_Config" />
+	</flow>
+	<flow name="get-percentage" doc:id="0d6cebca-8a1f-4e3b-8c16-75adadfbf605" >
+		<set-variable value="#[upper(message.attributes.uriParams.'period')]" doc:name="period" doc:id="f409cc21-d425-4db8-bc4a-ea5657b3cd12" variableName="period" />
+		<logger level="INFO" doc:name="Logger" doc:id="76e534b9-9ba5-4bf7-9d6c-c5e1fda840f9" message="#[vars.period]"/>
+		<choice doc:name="Router based on period" doc:id="cefe52c0-8936-4ab2-8c54-a976ad424111" >
+			<when expression="#[vars.period == 'ALL']">
+				<flow-ref doc:name="Flow Reference" doc:id="b4a1413b-e917-4425-9722-9dcd412ab12d" name="get-all-time-percentage"/>
+			</when>
+			<when expression="#[vars.period == 'WEEK']">
+				<flow-ref doc:name="Flow Reference" doc:id="5653f134-ff1f-477b-b28d-929a69ad5023" name="get-current-week-percentage"/>
+			</when>
+			<when expression="import isNumeric from dw::core::Strings output application/java --- isNumeric(vars.period)" >
+				<flow-ref doc:name="Flow Reference" doc:id="e708eee8-85f9-49ef-9553-6d88ff9dec07" name="get-year-percentage"/>
+			</when>
+			<when expression='#[vars.period == "YEAR"]'>
+				<flow-ref doc:name="Flow Reference" doc:id="c1eb5f72-e630-43c8-bf45-42a61c62bbb1" name="get-last-year-percentage"/>
+			</when>
+			<otherwise>
+				<set-payload value='#["uri parameter should be ALL, WEEK, or year number (example 2020)"]' doc:name="Set Payload" doc:id="c2b07938-3716-4452-a0f0-83b4c1fd95dd" />
+			</otherwise>
+		</choice>
+		<choice doc:name="Choice" doc:id="d954231e-f4ef-412f-8312-6fbca00046f1" >
+			<when expression="#[sizeOf(payload) !=0]">
+				<ee:transform doc:name="Transform Message" doc:id="43803aa4-aa35-4e15-a8e1-b3c0ae4a7284">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+
+{
+	"poorPer": (payload.TechnicalStatus filter (value, index) ->  (upper(value) == "POOR")) as Array,
+	"averagePer": (payload.TechnicalStatus filter (value, index) -> (upper(value) == "AVERAGE")) as Array,
+	"goodPer": (payload.TechnicalStatus filter (value, index) -> (upper(value) == "GOOD")) as Array,
+	"superstarPer": (payload.TechnicalStatus filter (value, index) -> (upper(value) == "SUPERSTAR")) as Array
+	
+}
+
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+				<ee:transform doc:name="Transform Message" doc:id="47f6e771-2c5a-49ca-a67b-9fb5a2d5a077">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+ import * from dw::core::Arrays
+var total =  (sizeOf(payload.averagePer)
+		+ sizeOf(payload.goodPer) + sizeOf(payload.poorPer)
+		+ sizeOf(payload.superstarPer))
+---
+{
+//	"poorSize": sizeOf(payload.poorPer),
+//	"total": total,
+	
+	"PoorPer": ((sizeOf(payload.poorPer) / total) * 100) as String {format: "##.00"},
+	"AveragePer": ((sizeOf(payload.averagePer)  / total) * 100) as String {format: "##.00"},
+	"GoodPer": ((sizeOf(payload.goodPer)  / total) * 100) as String {format: "##.00"},
+	"SuperstarPer": ((sizeOf(payload.superstarPer)  / total) * 100)  as String {format: "##.00"} 
+	
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+			</when>
+			<otherwise >
+				<set-payload value='#["Records Not Found"]' doc:name="Set Payload" doc:id="823da940-c8b3-4334-add9-72ed5eb66d35" />
+			</otherwise>
+		</choice>
+	</flow>
+	<flow name="get-current-week-percentage" doc:id="1c0a6112-b7c5-412f-bf4a-7311c66417ae" >
+		<qc-system-api:get-batches doc:name="Get Batches" doc:id="5d3d3eea-06f3-4198-b8af-48c5a0550fdd" config-ref="QC_System_API_Config"/>
+		<logger level="INFO" doc:name="Logger" doc:id="6860b8b3-db6f-4b4a-8c77-4a6759d1aca3" message="#[payload]" />
+		<ee:transform doc:name="Filter Running Batches" doc:id="a7acc294-6e83-480b-80a5-9ae1187615dc" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+//var weekNumber = 
+var todayDate = now() as Date as String {format: "yyyy-MM-dd"}
+
+---
+//payload map {
+//	//"dd": todayDate,
+//	"star-date < today-date": $.StartDate as Date as String {format: "yyyy-MM-dd"},
+//	"start": $.StartDate as Date as String {format: "yyyy-MM-dd"} < todayDate,
+//	"end-date > today-date": $.EndDate as Date as String {format: "yyyy-MM-dd"},
+//	"end": $.EndDate as Date as String {format: "yyyy-MM-dd"} > todayDate
+//}
+{
+	"CurrentBatches": (payload filter (value, index) ->  (
+		(value.StartDate as Date as String {format: "yyyy-MM-dd"} < todayDate == true) 
+		and value.EndDate as Date as String {format: "yyyy-MM-dd"} > todayDate == true)
+		) as Array
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="2de242d9-7de9-40aa-bbb4-36d5462f75b8" message="#[payload]" />
+		<ee:transform doc:name="Find Current Week" doc:id="f9d0d379-4ed8-414c-9a7c-ea5932549bf1" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+var numberOfDaysAfterMonday = now().dayOfWeek - 1
+var currentMondayDate = now() as Date - ("P$(numberOfDaysAfterMonday)D")
+---
+payload.CurrentBatches map {
+	"id": $.BatchId,
+	"currentWeek": ceil(daysBetween( $.StartDate, currentMondayDate) / 7) as String {format: "###"}
+}
+
+
+//{
+//	"currentWeek": (todayDate as String {format: "yyyy-MM-dd"} 
+//	+ |P1M| - |P1D|) as String {format: "yyyy-MM-dd"}
+//}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Empty Array For Notes Variable" doc:id="a6e12041-b5f2-4b39-a861-e3d0b8d8b6ff" >
+			<ee:message />
+			<ee:variables >
+				<ee:set-variable variableName="notes" ><![CDATA[%dw 2.0
+output application/json
+---
+[]]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<foreach doc:name="For Each" doc:id="cb835a1b-4d46-4b47-894d-fb92ba1870b6" >
+			<flow-ref doc:name="Flow Reference" doc:id="fe8dac19-5733-46e4-8743-a89f9094c7bd" name="get-notes-by-batch-id-and-week" target="result"/>
+			<ee:transform doc:name="Transform Message" doc:id="82de6e61-925a-46bf-8da1-47ca20085c54" >
+				<ee:message />
+				<ee:variables >
+					<ee:set-variable variableName="notes" ><![CDATA[%dw 2.0
+output application/json
+---
+vars.notes ++ vars.result]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+		</foreach>
+		<set-payload value="#[vars.notes]" doc:name="Set Payload" doc:id="f624551a-5a5a-43b8-a8b2-3064d1d0aed1" />
+		<logger level="INFO" doc:name="Logger" doc:id="fd584672-4f3f-483b-862d-5051225cd63a" message="#[payload]" />
+	</flow>
+	<flow name="get-notes-by-batch-id-and-week" doc:id="b77fdcfc-e2c4-4c48-89d3-537ebafdf944">
+		<qc-system-api:get-notes-by-batch-id-and-week doc:name="Get Notes By Batch ID and Week" doc:id="af78f00e-8d04-489a-b2c7-1b69ded155e8" config-ref="QC_System_API_Config" batch-id="#[payload.id]" week="#[payload.currentWeek]" />
+	</flow>
+	<flow name="qc-process-api-implFlow" doc:id="c71af1b7-5ed9-4591-b8a5-19f642bcff08">
+		<http:listener doc:name="Listener" doc:id="e4b61aa3-3d6a-4d5f-9a1e-786533a43a9f" config-ref="HTTP_Listener_config" path="/test" />
+		<http:request method="GET" doc:name="Request" doc:id="e47a0e5c-89f2-4a96-9b65-08419cbbc303" config-ref="HTTP_Request_configuration" path="/batch" />
+		<logger level="INFO" doc:name="Logger" doc:id="69941bc6-c662-481d-a73d-d80d5a82ebca" message="#[payload]" />
+		<ee:transform doc:name="Filter Running Batches" doc:id="f2a03c14-7b95-44cf-af54-c56a68261db0">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+//var weekNumber = 
+var todayDate = now() as Date as String {format: "yyyy-MM-dd"}
+
+---
+//payload map {
+//	//"dd": todayDate,
+//	"star-date < today-date": $.StartDate as Date as String {format: "yyyy-MM-dd"},
+//	"start": $.StartDate as Date as String {format: "yyyy-MM-dd"} < todayDate,
+//	"end-date > today-date": $.EndDate as Date as String {format: "yyyy-MM-dd"},
+//	"end": $.EndDate as Date as String {format: "yyyy-MM-dd"} > todayDate
+//}
+{
+	"CurrentBatches": (payload filter (value, index) ->  (
+		(value.StartDate as Date as String {format: "yyyy-MM-dd"} < todayDate == true) 
+		and value.EndDate as Date as String {format: "yyyy-MM-dd"} > todayDate == true)
+		) as Array
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="262f02c3-55cb-49f2-a4cf-6ab7346cf4a9" message="#[payload]" />
+		<ee:transform doc:name="Find Current Week" doc:id="e3054f1f-5223-419c-8902-d11b257f3b1d">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+var numberOfDaysAfterMonday = now().dayOfWeek - 1
+var currentMondayDate = now() as Date - ("P$(numberOfDaysAfterMonday)D")
+---
+payload.CurrentBatches map {
+	"id": $.BatchId,
+	"currentWeek": ceil(daysBetween( $.StartDate, currentMondayDate) / 7) as String {format: "###"}
+}
+
+
+//{
+//	"currentWeek": (todayDate as String {format: "yyyy-MM-dd"} 
+//	+ |P1M| - |P1D|) as String {format: "yyyy-MM-dd"}
+//}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Empty Array For Notes Variable" doc:id="683154fe-c016-4499-88b3-9d963928534a">
+			<ee:message>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="notes"><![CDATA[%dw 2.0
+output application/json
+---
+[]]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<foreach doc:name="For Each" doc:id="6ebd7492-a204-46a1-986a-15d00f71e05f">
+			<flow-ref doc:name="Flow Reference" doc:id="21d41825-ba5b-47ea-8344-0f7510ead6ea" name="get-notes-by-batch-id-and-week" target="result" />
+			<ee:transform doc:name="Transform Message" doc:id="6f1af7a5-dd37-401f-9d07-5f54e01141d1">
+				<ee:message>
+				</ee:message>
+				<ee:variables>
+					<ee:set-variable variableName="notes"><![CDATA[%dw 2.0
+output application/json
+---
+vars.notes ++ vars.result]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+		</foreach>
+		<set-payload value="#[vars.notes]" doc:name="Set Payload" doc:id="f3eaaa0b-392c-4d9a-ba1c-c859fd862e6c" />
+		<logger level="INFO" doc:name="Logger" doc:id="62fd64aa-c9fe-477c-aff8-8070aead54a5" message="#[payload]" />
+	</flow>
+	<flow name="get-last-year-percentage" doc:id="a7762021-3eb8-4bc2-8404-86c8206d5556" >
+		<qc-system-api:get-batches doc:name="Get Batches" doc:id="993ce084-4b2f-4207-8807-741c2e0e0091" config-ref="QC_System_API_Config" />
+		<logger level="INFO" doc:name="Logger" doc:id="c8ffca40-3111-4506-aca3-79e4dfa1facc" message="#[payload]" />
+		<ee:transform doc:name="Transform Message" doc:id="6678bc35-129f-44dd-8401-a44b490bc198" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map {
+	"BatchId": $.BatchId,
+	"StartDate": $.StartDate as Date,
+	"EndDate": $.EndDate as Date
+} ]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Filter Batches Who Started Before Current Date Or Endded A Year Ago" doc:id="b05a4b13-72fc-4d69-9c1c-ae2a5e583207" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+var todayDate = now() as Date //as String {format: "yyyy-MM-dd"}
+var aYearAgo = now() as Date - |P1Y|
+---
+//{
+//	"CurrentBatches": (payload filter (value, index) ->  (
+//		(value.StartDate.year == vars.period) 
+//		or value.EndDate.year == vars.period)
+//		) as Array
+//}
+payload map {
+	"id": $.BatchId,
+	"startDate": $.StartDate,
+	"endDate": $.EndDate,
+	"TodayDate": todayDate as String {format: "yyyy-MM-dd"},
+	"AYearAgoDate": aYearAgo as String {format: "yyyy-MM-dd"}
+} filter ($.startDate < todayDate and $.startDate > aYearAgo) or 
+		($.endDate > aYearAgo and $.endDate < todayDate)
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="e26043c8-ca6f-49cb-837c-5ced68cb79cb" />
+		<ee:transform doc:name="Empty Array For Notes Variable" doc:id="91c91f81-3b15-4e28-b9c4-2245c96a08de" >
+			<ee:message />
+			<ee:variables >
+				<ee:set-variable variableName="notes" ><![CDATA[%dw 2.0
+output application/json
+---
+[]]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<foreach doc:name="Copy_of_For Each" doc:id="03bf8656-57cb-427c-886d-8425cc00adb1" >
+			<flow-ref doc:name="Flow Reference" doc:id="592d5387-bbeb-48f1-bd73-b9a6423ccdc4" name="get-notes-by-batch-id" target="result" />
+			<ee:transform doc:name="Transform Message" doc:id="8642c668-8821-4a7c-ab85-594329017713" >
+				<ee:message />
+				<ee:variables >
+					<ee:set-variable variableName="notes" ><![CDATA[%dw 2.0
+output application/json
+---
+vars.notes ++ vars.result]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+		</foreach>
+		<set-payload value="#[vars.notes]" doc:name="Set Payload" doc:id="be47af13-c38f-4e8b-9e73-d37f8996bb15" />
+		<logger level="INFO" doc:name="Logger" doc:id="b2daec3a-2799-4a3f-92d1-8678685c4426" message="#[payload]" />
+	</flow>
+	<flow name="get-year-percentage" doc:id="424c76b0-2b15-4201-9e2e-13a39a7a5e4e">
+		<qc-system-api:get-batches doc:name="Get Batches" doc:id="8c825f32-e1a9-426a-bad7-70605759c51a" config-ref="QC_System_API_Config" />
+		<logger level="INFO" doc:name="Logger" doc:id="ae886bc5-da4a-499d-9170-38089d20ee40" message="#[payload]" />
+		<ee:transform doc:name="Transform Message" doc:id="ba3176e5-f0ed-4e44-a64e-97d5cbf48a74">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload map {
+	"BatchId": $.BatchId,
+	"StartDate": $.StartDate as Date,
+	"EndDate": $.EndDate as Date
+} ]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Filter Batches By Year" doc:id="ba43a269-6e2c-44af-87dd-fc25b65cc434">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+
+---
+//{
+//	"CurrentBatches": (payload filter (value, index) ->  (
+//		(value.StartDate.year == vars.period) 
+//		or value.EndDate.year == vars.period)
+//		) as Array
+//}
+payload map {
+	"id": $.BatchId,
+	"startDate": $.StartDate,
+	"endDate": $.EndDate
+} filter $.startDate.year as String == vars.period or $.endDate.year as String == vars.period
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="1f81c249-e0a2-42b4-8d7e-cee375494265" />
+		<ee:transform doc:name="Empty Array For Notes Variable" doc:id="807963df-8ae8-4818-9688-1c712690bf62">
+			<ee:message />
+			<ee:variables>
+				<ee:set-variable variableName="notes"><![CDATA[%dw 2.0
+output application/json
+---
+[]]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<foreach doc:name="For Each" doc:id="1f8b855d-64a3-41c9-aefb-567f6d150c48">
+			<flow-ref doc:name="Flow Reference" doc:id="458d6fa5-e81f-46bb-9ba3-f4b1b5901be5" name="get-notes-by-batch-id" target="result" />
+			<ee:transform doc:name="Transform Message" doc:id="efb4c4bb-2f35-4884-9c69-964247cd02e7">
+				<ee:message />
+				<ee:variables>
+					<ee:set-variable variableName="notes"><![CDATA[%dw 2.0
+output application/json
+---
+vars.notes ++ vars.result]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+		</foreach>
+		<set-payload value="#[vars.notes]" doc:name="Set Payload" doc:id="e381e277-385f-4ead-9f32-889966d415ec" />
+		<logger level="INFO" doc:name="Logger" doc:id="213fb595-cfcb-4f76-be46-31cdc8289e42" message="#[payload]" />
+	</flow>
+	<flow name="get-notes-by-batch-id" doc:id="80e0309b-1e9d-43a4-9899-cb861146f192" >
+		<qc-system-api:get-notes-by-batch-id doc:name="Get Notes By Batch ID" doc:id="4a4ce330-ed75-4795-aeea-68d2594e5a27" config-ref="QC_System_API_Config" batch-id="#[payload.id]"/>
+	</flow>
+</mule>
