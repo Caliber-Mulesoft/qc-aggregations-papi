@@ -91,10 +91,10 @@ var total =  (sizeOf(payload.averagePer)
 				<flow-ref doc:name="Flow Reference" doc:id="c55b619a-c8bd-4372-9d35-d225930e378f" name="compare-current-week-with-all-time" />
 			</when>
 			<when expression="#[vars.period == 'WEEK']" >
-				<flow-ref doc:name="Flow Reference" doc:id="0c945230-9fc0-415a-8e7c-1a865a72be47" name="get-current-week-percentage" />
+				<flow-ref doc:name="Flow Reference" doc:id="0c945230-9fc0-415a-8e7c-1a865a72be47" name="compare-current-week-with-last-week" />
 			</when>
 			<when expression='#[vars.period == "YEAR"]' >
-				<flow-ref doc:name="Flow Reference" doc:id="e2c30a77-a3b6-4a76-b652-c11bc3bbd2bd" name="get-last-year-percentage" />
+				<flow-ref doc:name="Flow Reference" doc:id="e2c30a77-a3b6-4a76-b652-c11bc3bbd2bd" name="compare-current-week-with-year" />
 			</when>
 			<otherwise >
 				<set-payload value='#["uri parameter should be all, week, or year"]' doc:name="Set Payload" doc:id="d68b1e6d-3675-460f-bae7-51b27e750693" />
@@ -103,9 +103,25 @@ var total =  (sizeOf(payload.averagePer)
 	</flow>
 	<flow name="compare-current-week-with-all-time" doc:id="e396e6fa-ba7d-4fef-87a1-38669e3d3691" >
 		<flow-ref doc:name="Flow Reference" doc:id="7173e588-5e2d-4872-852f-57f40f9b395f" name="get-current-week-percentage"/>
-		<set-variable value="#[payload]" doc:name="Set Current Week Percentages" doc:id="f0b1e459-6443-414e-9564-c755f194d04a" variableName="CurrentWeekPercentages"/>
+		<ee:transform doc:name="Transform Message" doc:id="074fcd1d-632b-4522-87bd-7496080f9539" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="defaultPayload" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+    "PoorPer": "0",
+    "AveragePer": "0",
+    "GoodPer": "0",
+    "SuperstarPer": "0"
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<set-variable value='#[if(payload == "Records Not Found") vars.defaultPayload else payload]' doc:name="Set Current Week Percentages" doc:id="f0b1e459-6443-414e-9564-c755f194d04a" variableName="CurrentWeekPercentages"/>
+		<logger level="INFO" doc:name="Logger" doc:id="4d9ab342-8ccb-4d42-96d0-5a6a0923432a" message="#[payload]"/>
 		<flow-ref doc:name="Flow Reference" doc:id="76eefa4e-70dd-43c3-9b75-de28e74ea9a7" name="get-all-time-percentage" />
-		<set-variable value="#[payload]" doc:name="Set All Time Percentage" doc:id="e789d40a-1d7d-4bff-94c0-e9594ffc6187" variableName="AllTimePercentages" />
+		<set-variable value='#[if(payload == "Records Not Found") vars.defaultPayload else payload]' doc:name="Set All Time Percentage" doc:id="e789d40a-1d7d-4bff-94c0-e9594ffc6187" variableName="AllTimePercentages" />
 		<ee:transform doc:name="Transform Message" doc:id="573f1326-be09-4b5e-8cd5-8aa8db6c75de" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
@@ -120,6 +136,122 @@ output application/json
 			</ee:message>
 		</ee:transform>
 		<ee:transform doc:name="Transform Message" doc:id="25310fc8-84fc-4135-9d99-f51809a21905" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+fun getIncreaseOrDecrease(number: Number) = do {
+	var word =
+		if (number == 0)
+			"NoChange"
+		else if (number < 0)
+			"Decrease"
+		else
+			"Increase"
+	---
+	word
+}
+---
+{
+	"PoorPercentageChange": getIncreaseOrDecrease(payload.PoorDifference) ++ " " ++ abs(payload.PoorDifference) as String,
+	"AveragePercentageChange": getIncreaseOrDecrease(payload.AverageDifference) ++ " " ++ abs(payload.AverageDifference) as String,
+	"GoodPercentageChange": getIncreaseOrDecrease(payload.GoodDifference) ++ " " ++ abs(payload.GoodDifference) as String,
+	"SuperstarPercentageChange": getIncreaseOrDecrease(payload.SuperstarDifference) ++ " " ++ abs(payload.SuperstarDifference)as String
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="compare-current-week-with-last-week" doc:id="e86801b0-db64-4d41-b888-7ea34615bc2b" >
+		<flow-ref doc:name="Flow Reference" doc:id="dd73a996-d679-42ce-a9a5-3dc4359caa0a" name="get-current-week-percentage" />
+		<ee:transform doc:name="Transform Message" doc:id="4114e213-832f-48d8-8ffc-3de411e515f9" >
+			<ee:message />
+			<ee:variables >
+				<ee:set-variable variableName="defaultPayload" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+    "PoorPer": "0",
+    "AveragePer": "0",
+    "GoodPer": "0",
+    "SuperstarPer": "0"
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<set-variable value='#[if(payload == "Records Not Found") vars.defaultPayload else payload]' doc:name="Set Current Week Percentages" doc:id="44c750c3-5b60-47a3-a4ad-28de8b37977b" variableName="CurrentWeekPercentages" />
+		<logger level="INFO" doc:name="Logger" doc:id="1f7af695-1500-4512-9d1b-0338ac825abc" message="#[payload]" />
+		<flow-ref doc:name="Flow Reference" doc:id="2e08b16c-db1d-4778-a769-3bd885f60b8b" name="get-last-week-percentages" />
+		<set-variable value='#[if(payload == "Records Not Found") vars.defaultPayload else payload]' doc:name="Set Last Week Percentage" doc:id="3bb9d2f0-5b33-45e8-8618-9d3b4231506d" variableName="LastWeekPercentages" />
+		<ee:transform doc:name="Transform Message" doc:id="f71dcd5c-5b87-4566-9e4f-9b726d514d46" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"PoorDifference": (vars.CurrentWeekPercentages.PoorPer - vars.LastWeekPercentages.PoorPer) as Number,
+	"AverageDifference": (vars.CurrentWeekPercentages.AveragePer - vars.LastWeekPercentages.AveragePer) as Number,
+	"GoodDifference": (vars.CurrentWeekPercentages.GoodPer - vars.LastWeekPercentages.GoodPer) as Number,
+	"SuperstarDifference": (vars.CurrentWeekPercentages.SuperstarPer - vars.LastWeekPercentages.SuperstarPer) as Number
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Transform Message" doc:id="81487416-0286-49df-8fde-55120ff5be11" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+fun getIncreaseOrDecrease(number: Number) = do {
+	var word =
+		if (number == 0)
+			"NoChange"
+		else if (number < 0)
+			"Decrease"
+		else
+			"Increase"
+	---
+	word
+}
+---
+{
+	"PoorPercentageChange": getIncreaseOrDecrease(payload.PoorDifference) ++ " " ++ abs(payload.PoorDifference) as String,
+	"AveragePercentageChange": getIncreaseOrDecrease(payload.AverageDifference) ++ " " ++ abs(payload.AverageDifference) as String,
+	"GoodPercentageChange": getIncreaseOrDecrease(payload.GoodDifference) ++ " " ++ abs(payload.GoodDifference) as String,
+	"SuperstarPercentageChange": getIncreaseOrDecrease(payload.SuperstarDifference) ++ " " ++ abs(payload.SuperstarDifference)as String
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="compare-current-week-with-year" doc:id="692d0daf-7013-49e4-8702-62c1bef28fdc" >
+		<flow-ref doc:name="Flow Reference" doc:id="9d8c8b5e-0bbc-4071-bfca-973b9bb59278" name="get-current-week-percentage" />
+		<ee:transform doc:name="Transform Message" doc:id="26fa6912-65f9-4429-90c9-36dff58dbd61" >
+			<ee:message />
+			<ee:variables >
+				<ee:set-variable variableName="defaultPayload" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+    "PoorPer": "0",
+    "AveragePer": "0",
+    "GoodPer": "0",
+    "SuperstarPer": "0"
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<set-variable value='#[if(payload == "Records Not Found") vars.defaultPayload else payload]' doc:name="Set Current Week Percentages" doc:id="dcaca088-319e-4546-b155-96d30a184f44" variableName="CurrentWeekPercentages" />
+		<logger level="INFO" doc:name="Logger" doc:id="95f0755a-6bb6-4e2b-801a-7a5063bf078e" message="#[payload]" />
+		<flow-ref doc:name="Flow Reference" doc:id="34e14e94-3488-4fd4-a589-1fd4078885c6" name="get-last-year-percentage" />
+		<set-variable value='#[if(payload == "Records Not Found") vars.defaultPayload else payload]' doc:name="Set Last Year Percentages" doc:id="cfee9adb-77b9-4b02-8f0a-abc7a3dfebf5" variableName="LastYearPercentages" />
+		<ee:transform doc:name="Transform Message" doc:id="304cee8f-a664-4f42-98e4-b0e3c05405c1" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"PoorDifference": (vars.CurrentWeekPercentages.PoorPer - vars.LastYearPercentages.PoorPer) as Number,
+	"AverageDifference": (vars.CurrentWeekPercentages.AveragePer - vars.LastYearPercentages.AveragePer) as Number,
+	"GoodDifference": (vars.CurrentWeekPercentages.GoodPer - vars.LastYearPercentages.GoodPer) as Number,
+	"SuperstarDifference": (vars.CurrentWeekPercentages.SuperstarPer - vars.LastYearPercentages.SuperstarPer) as Number
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Transform Message" doc:id="a2c37ce4-f598-4270-b417-829f5da8cfd6" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
 output application/json

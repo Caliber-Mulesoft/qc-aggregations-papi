@@ -15,6 +15,18 @@ type qc_system_api_batches_json = Array<{|  BatchId: String,   StartDate: String
 
 ]]></types:shape>
     </types:type>
+    <types:type name="percentages_json" format="json">
+      <types:shape format="weave" example="percentages.json"><![CDATA[%dw 2.0
+
+type percentages_json = {|
+  PoorPer: String, 
+  AveragePer: String, 
+  GoodPer: String, 
+  SuperstarPer: String
+|} {"example": "{\\\"PoorPer\\\":\\\"31.11\\\",\\\"AveragePer\\\":\\\"28.89\\\",\\\"GoodPer\\\":\\\"40.00\\\",\\\"SuperstarPer\\\":\\\".00\\\"}"}
+
+]]></types:shape>
+    </types:type>
   </types:catalog>
   <types:enrichment select="#b047cd2b-6c8d-41ef-993a-8128f3c63ee2">
     <types:processor-declaration>
@@ -31,6 +43,45 @@ type qc_system_api_batches_json = Array<{|  BatchId: String,   StartDate: String
         <types:message>
           <types:payload type="qc_system_api_notes_json"/>
         </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#074fcd1d-632b-4522-87bd-7496080f9539">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="percentages_json"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#573f1326-be09-4b5e-8cd5-8aa8db6c75de">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:variables>
+          <types:variable name="AllTimePercentages" type="percentages_json"/>
+          <types:variable name="CurrentWeekPercentages" type="percentages_json"/>
+        </types:variables>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#304cee8f-a664-4f42-98e4-b0e3c05405c1">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:variables>
+          <types:variable name="LastYearPercentages" type="percentages_json"/>
+          <types:variable name="CurrentWeekPercentages" type="percentages_json"/>
+        </types:variables>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#f71dcd5c-5b87-4566-9e4f-9b726d514d46">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:variables>
+          <types:variable name="CurrentWeekPercentages" type="percentages_json"/>
+          <types:variable name="LastWeekPercentages" type="percentages_json"/>
+        </types:variables>
       </types:input-event>
     </types:processor-declaration>
   </types:enrichment>
