@@ -1,0 +1,27 @@
+[
+  {
+    "BatchId": "TR-1201",
+    "StartDate": "2021-12-03",
+    "EndDate": "2022-02-11"
+  },
+  {
+    "BatchId": "TR-1072",
+    "StartDate": "2020-09-02",
+    "EndDate": "2020-11-11"
+  },
+  {
+    "BatchId": "TR-1140",
+    "StartDate": "2021-05-14",
+    "EndDate": "2021-07-23"
+  },
+  {
+    "BatchId": "TR-1021",
+    "StartDate": "2020-03-04",
+    "EndDate": "2020-05-13"
+  },
+  {
+    "BatchId": "TR-1067",
+    "StartDate": "2020-08-12",
+    "EndDate": "2020-10-21"
+  }
+]

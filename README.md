@@ -5,45 +5,84 @@
 Get all notes information from QC System API and apply business logic to aggregate each technical status and find the percentages and make comparison operations
 
 ## BUILT WITH
-  <!--Write the list of technologies for the API here-->
+
+* REST
+* Git
+* Maven
+* MUnit
+* Mulesoft
+* Anypoint Studio
+* Anypoint Platform
   
 ## GETTING STARTED
-  <!--Write the steps for basic setup here-->
 
+* git clone https://github.com/Caliber-Mulesoft/qc-aggregations-papi.git
+
+* Import project qc-process-api into Anypoint Studio (the folder containing the project has the same name).
+
+* Deploy to CloudHub (Anypoint Platform)
   <!--Leave the following non-comment instruction at the bottom-->
   Please refer to the SETUP document for more detailed installation steps.
 
 ## PREREQUISITES
-  <!--Write any and all prerequisites for installing and using the API here-->
+
+ * Anypoint platform
+ * Anypoint studio 7.8.0
+ * OpenJDK 8
+ * Embedded Maven
+ * HTTP connector 1.5.24
+ * APIkit 1.5.1
+
 
 ## ENVIRONMENT VARIABLES
-  <!-- If there are any environment variables or special code
-       snippets that are required for the API to run properly,
-       paste them here and label what they are. For example 
-       
-       password: t|-|iS1SaP@S$W0rD
-     -->
+  N/A
 
 ## USAGE EXAMPLES
-  <!--Write some concise use cases here. Be sure to mention which endpoint(s) do what.-->
+
+* Get percentages:  /percentages/{period}   (period can be week, year, all, or year number"2020")
+
+* This returns the performance of all batches for a specific period:
+
+   * week: returns the current week percentages
+   * year: returns the last 52 weeks percentages
+   * all: returns all time percentages
+   
+* Example response:
+
+{
+  "PoorPer": "29.63",
+  "AveragePer": "22.22",
+  "GoodPer": "48.15",
+  "SuperstarPer": ".00"
+}
+
+* Get comparison: /compare/{period} (period can be week, year, or all)
+ 
+* This returns the differnece in performance of all batches between a specific period and the current week:
+
+   * week: returns the differnece in performance between last week and the current week
+   * year: returns the differnece in performance between last 52 weeks and the current week
+   * all: returns the differnece in performance between all time and the current week
+
+* Example response:
+
+{
+  "PoorPercentageChange": "Decrease 29.63",
+  "AveragePercentageChange": "Increase 22.22",
+  "GoodPercentageChange": "Decrease 48.15",
+  "SuperstarPercentageChange": "NoChanges 0"
+}
 
 ## ROADMAP
-  <!--Include a list of bugs/issues and possible future fixes here. 
-      Don't fill this out until we reach code freeze or if you are ready to deploy.-->
 
 ## ADDITIONAL MATERIAL
-  <!-- Include a list of any additional materials, like external 
-    libraries or resources that must be manually added to run the project, if any. -->
 
 ## AUTHORS
-  <!-- Take credit for your hard work here -->
 
-<!--
-***Shoutout to Best-README-Template on GitHub
-*** This template is a simplified version of their blank markdown template
-*** https://github.com/othneildrew/Best-README-Template.git 
-*** Cheers, 
-***    -Josh C.
--->
+* Scrum Master: Brian Callahan
 
-<!-- Final step: remove all the comments. If any sections are blank, you can remove those too. -->
+* Tugba Ozden
+
+* Zephyr Zambrano
+
+* CloudHub Captin: Iyad Shobaki

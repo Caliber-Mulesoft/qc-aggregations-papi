@@ -5,6 +5,18 @@
     },
     "b047cd2b-6c8d-41ef-993a-8128f3c63ee2": {
       "payload": "sample_data/list_json.json"
+    },
+    "1cf2be78-72d2-45ee-b907-95f6341dbacb": {
+      "payload": "sample_data/list_json_2.json"
+    },
+    "a8ac6f84-2e83-48fe-88f1-a5fad48a3d3e": {
+      "payload": "sample_data/json.json"
+    },
+    "b05a4b13-72fc-4d69-9c1c-ae2a5e583207": {
+      "payload": "sample_data/list_json_3.json"
+    },
+    "904d983c-e591-4a41-8dd7-8dc6f7f23ed1": {
+      "payload": "sample_data/json_1.json"
     }
   }
 }
