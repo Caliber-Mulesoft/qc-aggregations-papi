@@ -48,14 +48,14 @@ Get all notes information from QC System API and apply business logic to aggrega
    * all: returns all time percentages
    
 * Example response:
-
+```
 {
   "PoorPer": "29.63",
   "AveragePer": "22.22",
   "GoodPer": "48.15",
   "SuperstarPer": ".00"
 }
-
+```
 * Get comparison: /compare/{period} (period can be week, year, or all)
  
 * This returns the differnece in performance of all batches between a specific period and the current week:
@@ -66,13 +66,14 @@ Get all notes information from QC System API and apply business logic to aggrega
 
 * Example response:
 
+```
 {
-  "PoorPercentageChange": "Decrease 29.63",
-  "AveragePercentageChange": "Increase 22.22",
-  "GoodPercentageChange": "Decrease 48.15",
-  "SuperstarPercentageChange": "NoChanges 0"
+  "PoorPercentageChange": "-29.63",
+  "AveragePercentageChange": "22.22",
+  "GoodPercentageChange": "48.15",
+  "SuperstarPercentageChange": "0"
 }
-
+```
 ## ROADMAP
 
 ## ADDITIONAL MATERIAL
