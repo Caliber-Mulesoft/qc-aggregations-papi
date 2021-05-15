@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mule xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd ">
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd ">
     <http:listener-config name="qc-process-api-httpListenerConfig">
         <http:listener-connection host="0.0.0.0" port="8081" />
     </http:listener-config>
-    <apikit:config name="qc-process-api-config" api="resource::202383ba-8a30-47f2-a9af-40a59ffe741f:qc-process-api:1.0.2:raml:zip:qc-process-api.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+    <apikit:config name="qc-process-api-config" api="resource::202383ba-8a30-47f2-a9af-40a59ffe741f:qc-process-api:1.0.3:raml:zip:qc-process-api.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
     <flow name="qc-process-api-main">
         <http:listener config-ref="qc-process-api-httpListenerConfig" path="/api/*">
             <http:response statusCode="#[vars.httpStatus default 200]">
@@ -124,9 +124,9 @@ output application/json
         </error-handler>
     </flow>
     <flow name="get:\compare\(period):qc-process-api-config">
-		<flow-ref doc:name="Flow Reference" doc:id="59f69f83-5f8a-4438-b191-c20b1d165dfb" name="get-comparison"/>
+        <flow-ref doc:name="Flow Reference" doc:id="59f69f83-5f8a-4438-b191-c20b1d165dfb" name="get-comparison" />
     </flow>
     <flow name="get:\percentage\(period):qc-process-api-config">
-		<flow-ref doc:name="Flow Reference" doc:id="6a8a92e8-a653-4c4d-9e10-c6afad13eb15" name="get-percentage"/>
+        <flow-ref doc:name="Flow Reference" doc:id="6a8a92e8-a653-4c4d-9e10-c6afad13eb15" name="get-percentage" />
     </flow>
 </mule>

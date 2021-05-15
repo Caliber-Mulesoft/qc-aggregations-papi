@@ -315,8 +315,8 @@ var todayDate = now() as Date as String {format: "yyyy-MM-dd"}
 //}
 {
 	"CurrentBatches": (payload filter (value, index) ->  (
-		(value.StartDate as Date as String {format: "yyyy-MM-dd"} < todayDate == true) 
-		and value.EndDate as Date as String {format: "yyyy-MM-dd"} > todayDate == true)
+		(value.StartDate as Date as String {format: "yyyy-MM-dd"} <= todayDate == true) 
+		and value.EndDate as Date as String {format: "yyyy-MM-dd"} >= todayDate == true)
 		) as Array
 }]]></ee:set-payload>
 			</ee:message>
