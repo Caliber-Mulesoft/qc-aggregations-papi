@@ -27,6 +27,13 @@ type percentages_json = {|
 
 ]]></types:shape>
     </types:type>
+    <types:type name="payload_id_and_week_json" format="json">
+      <types:shape format="weave" example="payloadIdAndWeek.json"><![CDATA[%dw 2.0
+
+type payload_id_and_week_json = Array<{|  id: String,   currentWeek: String|}> {"example": "[{\\\"id\\\":\\\"TR-1140\\\",\\\"currentWeek\\\":\\\"0\\\"}]"}
+
+]]></types:shape>
+    </types:type>
   </types:catalog>
   <types:enrichment select="#b047cd2b-6c8d-41ef-993a-8128f3c63ee2">
     <types:processor-declaration>
@@ -42,15 +49,6 @@ type percentages_json = {|
       <types:input-event>
         <types:message>
           <types:payload type="qc_system_api_notes_json"/>
-        </types:message>
-      </types:input-event>
-    </types:processor-declaration>
-  </types:enrichment>
-  <types:enrichment select="#074fcd1d-632b-4522-87bd-7496080f9539">
-    <types:processor-declaration>
-      <types:input-event>
-        <types:message>
-          <types:payload type="percentages_json"/>
         </types:message>
       </types:input-event>
     </types:processor-declaration>
@@ -82,6 +80,33 @@ type percentages_json = {|
           <types:variable name="CurrentWeekPercentages" type="percentages_json"/>
           <types:variable name="LastWeekPercentages" type="percentages_json"/>
         </types:variables>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#49766d66-d6f4-4756-bb4d-f82f72aa2a95">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="qc_system_api_notes_json"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#a2a47243-7272-4768-aafe-5aff36604b58">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="payload_id_and_week_json"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#6fd825ba-1b2a-4874-accc-e44d79ba96ad">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="percentages_json"/>
+        </types:message>
       </types:input-event>
     </types:processor-declaration>
   </types:enrichment>
