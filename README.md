@@ -93,4 +93,4 @@ Get all notes information from QC System API and apply business logic to aggrega
 
 * Zephyr Zambrano
 
-* CloudHub Captin: Iyad Shobaki
+* CloudHub Captain: Iyad Shobaki
