@@ -37,4 +37,8 @@ local.properties
 .studio/
 flows/
 target/
+.mule/**
+.mule/**/*
+.DS_Store
+velocity.log
 **/.mflow
