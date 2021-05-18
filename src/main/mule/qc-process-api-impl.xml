@@ -16,7 +16,7 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
 	<sub-flow
 		name="find-notes"
 		doc:id="2d9d176e-2066-44d5-a218-821c47095246">
-		<ee:transform doc:name="Transform Message" doc:id="a2a47243-7272-4768-aafe-5aff36604b58" >
+		<ee:transform doc:name="Payload Contains BatchIds and Week Number" doc:id="a2a47243-7272-4768-aafe-5aff36604b58" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
@@ -25,7 +25,7 @@ payload]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
 		<ee:transform
-			doc:name="Empty array for notes variable"
+			doc:name="Empty Array For Notes Variable"
 			doc:id="a6e12041-b5f2-4b39-a861-e3d0b8d8b6ff">
 			<ee:message />
 			<ee:variables>
@@ -43,7 +43,7 @@ output application/json
 				doc:id="fe8dac19-5733-46e4-8743-a89f9094c7bd"
 				name="get-notes-by-batch-id-and-week" targetValue="#[if(payload.currentWeek != null) [] else payload]" target="result"/>
 			<ee:transform
-				doc:name="Transform Message"
+				doc:name="Aggregate Notes"
 				doc:id="82de6e61-925a-46bf-8da1-47ca20085c54">
 				<ee:message />
 				<ee:variables>
@@ -56,7 +56,7 @@ vars.notes ++ vars.result]]></ee:set-variable>
 		</foreach>
 		<set-payload
 			value="#[vars.notes]"
-			doc:name="Set Payload"
+			doc:name="Set Payload To Notes"
 			doc:id="f624551a-5a5a-43b8-a8b2-3064d1d0aed1" />
 		<logger
 			level="INFO"
@@ -64,9 +64,8 @@ vars.notes ++ vars.result]]></ee:set-variable>
 			doc:id="fd584672-4f3f-483b-862d-5051225cd63a"
 			message="#[payload]" />
 		<flow-ref
-			doc:name="Flow Reference"
-			doc:id="b0ce3513-8715-431e-b4eb-19dab78541b9"
-			name="process-percentages" />
+			doc:name="Refrences Process Percentages Flow"
+			doc:id="b0ce3513-8715-431e-b4eb-19dab78541b9" name="process-percentages"/>
 	</sub-flow>
 	<sub-flow
 		name="process-percentages"
@@ -76,14 +75,14 @@ vars.notes ++ vars.result]]></ee:set-variable>
 			doc:id="43558da6-d33f-4dcb-bfa5-4b240ac65c55">
 			<when expression="#[sizeOf(payload) !=0]">
 				<ee:transform
-					doc:name="Transform Message"
+					doc:name="Filter Percentages"
 					doc:id="49766d66-d6f4-4756-bb4d-f82f72aa2a95">
 					<ee:message>
 						<ee:set-payload resource="processFilterPercentages.dwl" />
 					</ee:message>
 				</ee:transform>
 				<ee:transform
-					doc:name="Transform Message"
+					doc:name="Calculate Percentages"
 					doc:id="46282a05-9ece-415f-a020-377ad5fbb767">
 					<ee:message>
 						<ee:set-payload resource="processCalcPercentages.dwl" />
@@ -93,7 +92,7 @@ vars.notes ++ vars.result]]></ee:set-variable>
 			<otherwise>
 				<set-payload
 					value='#["Records Not Found"]'
-					doc:name="Set Payload"
+					doc:name="Set Payload To Records Not Found"
 					doc:id="61cf5823-c5cb-4ed5-ba6c-7de51d7ffc3f" />
 			</otherwise>
 		</choice>
@@ -111,7 +110,7 @@ vars.notes ++ vars.result]]></ee:set-variable>
 			doc:id="ae886bc5-da4a-499d-9170-38089d20ee40"
 			message="#[payload]" />
 		<ee:transform
-			doc:name="Transform Message"
+			doc:name="Change Dates From String To Date"
 			doc:id="ba3176e5-f0ed-4e44-a64e-97d5cbf48a74">
 			<ee:message>
 				<ee:set-payload resource="batchesStringToDate.dwl" />
@@ -126,16 +125,15 @@ vars.notes ++ vars.result]]></ee:set-variable>
 			doc:id="0553fdcd-49d5-4d6e-aa0f-9dcd77bf3f52"
 			config-ref="QC_System_API_Config" />
 		<flow-ref
-			doc:name="Flow Reference"
-			doc:id="99c28cc4-29cd-49cb-b7b9-0f2256a306d1"
-			name="process-percentages" />
+			doc:name="Refrences Process Percentages Flow"
+			doc:id="99c28cc4-29cd-49cb-b7b9-0f2256a306d1" name="process-percentages"/>
 	</flow>
 	<flow
 		name="get-percentage"
 		doc:id="0d6cebca-8a1f-4e3b-8c16-75adadfbf605">
 		<set-variable
 			value="#[upper(message.attributes.uriParams.'period')]"
-			doc:name="period"
+			doc:name="setPeriod"
 			doc:id="f409cc21-d425-4db8-bc4a-ea5657b3cd12"
 			variableName="period" />
 		<logger
@@ -145,19 +143,19 @@ vars.notes ++ vars.result]]></ee:set-variable>
 			message="#[vars.period]" />
 		<choice doc:name="Router based on period" doc:id="cefe52c0-8936-4ab2-8c54-a976ad424111" >
 			<when expression="#[vars.period == 'ALL']">
-				<flow-ref doc:name="Flow Reference" doc:id="b4a1413b-e917-4425-9722-9dcd412ab12d" name="get-all-time-percentage"/>
+				<flow-ref doc:name="Refrences Get All Time Percentages" doc:id="b4a1413b-e917-4425-9722-9dcd412ab12d" name="get-all-time-percentage"/>
 			</when>
 			<when expression="#[vars.period == 'WEEK']">
-				<flow-ref doc:name="Flow Reference" doc:id="5653f134-ff1f-477b-b28d-929a69ad5023" name="get-current-week-percentage"/>
+				<flow-ref doc:name="References Get Current Week Percentages" doc:id="5653f134-ff1f-477b-b28d-929a69ad5023" name="get-current-week-percentage"/>
 			</when>
 			<when expression="import isNumeric from dw::core::Strings output application/java --- isNumeric(vars.period)" >
-				<flow-ref doc:name="Flow Reference" doc:id="e708eee8-85f9-49ef-9553-6d88ff9dec07" name="get-year-percentage"/>
+				<flow-ref doc:name="References Get Year Percentages" doc:id="e708eee8-85f9-49ef-9553-6d88ff9dec07" name="get-year-percentage"/>
 			</when>
 			<when expression='#[vars.period == "YEAR"]'>
-				<flow-ref doc:name="Flow Reference" doc:id="c1eb5f72-e630-43c8-bf45-42a61c62bbb1" name="get-last-year-percentage"/>
+				<flow-ref doc:name="References Get Last Year Percentages" doc:id="c1eb5f72-e630-43c8-bf45-42a61c62bbb1" name="get-last-year-percentage"/>
 			</when>
 			<otherwise>
-				<set-payload value='#["uri parameter should be all, week, year, or number (example 2020)"]' doc:name="Set Payload" doc:id="c2b07938-3716-4452-a0f0-83b4c1fd95dd" />
+				<set-payload value='#["uri parameter should be all, week, year, or number (example 2020)"]' doc:name="Set Payload To Inform User With Correct Input" doc:id="c2b07938-3716-4452-a0f0-83b4c1fd95dd" />
 			</otherwise>
 		</choice>
 	</flow>
@@ -165,7 +163,7 @@ vars.notes ++ vars.result]]></ee:set-variable>
 	
 
 	<flow name="get-current-week-percentage" doc:id="1c0a6112-b7c5-412f-bf4a-7311c66417ae">
-		<flow-ref doc:name="Flow Reference" doc:id="879dd288-bab8-4520-b501-4d65cb8dda62" name="get-all-batches" />
+		<flow-ref doc:name="References Get All Batches" doc:id="879dd288-bab8-4520-b501-4d65cb8dda62" name="get-all-batches" />
 		<ee:transform doc:name="Filter this week batches" doc:id="a7acc294-6e83-480b-80a5-9ae1187615dc">
 			<ee:message>
 				<ee:set-payload resource="filterCurrentWeekBatches.dwl" />
@@ -177,13 +175,13 @@ vars.notes ++ vars.result]]></ee:set-variable>
 				<ee:set-payload resource="findCurrentWeek.dwl" />
 			</ee:message>
 		</ee:transform>
-		<flow-ref doc:name="Flow Reference" doc:id="500eb1b7-e4d6-486d-92fe-d0b15b31bff8" name="find-notes" />
+		<flow-ref doc:name="References Find Notes" doc:id="500eb1b7-e4d6-486d-92fe-d0b15b31bff8" name="find-notes" />
 	</flow>
 	
 	
 	
 	<flow name="get-last-week-percentages" doc:id="39cf881d-8c64-46ae-9c72-5dc388860a87">
-		<flow-ref doc:name="Flow Reference" doc:id="4073a743-0121-41b0-b5a0-db6d009ada3c" name="get-all-batches" />
+		<flow-ref doc:name="References Get All Batches" doc:id="4073a743-0121-41b0-b5a0-db6d009ada3c" name="get-all-batches" />
 		<ee:transform doc:name="Filter last week batches" doc:id="15b41877-48e3-459f-b784-a61d50f59d2a">
 			<ee:message>
 				<ee:set-payload resource="filterLastWeekBatches.dwl" />
@@ -195,14 +193,14 @@ vars.notes ++ vars.result]]></ee:set-variable>
 				<ee:set-payload resource="findLastWeek.dwl" />
 			</ee:message>
 		</ee:transform>
-		<flow-ref doc:name="Flow Reference" doc:id="79edf25c-11dd-43af-b7d0-11fca85118de" name="find-notes" />
+		<flow-ref doc:name="References Find Notes" doc:id="79edf25c-11dd-43af-b7d0-11fca85118de" name="find-notes" />
 	</flow>
 	
 	
 	
 	<flow name="get-last-year-percentage" doc:id="a7762021-3eb8-4bc2-8404-86c8206d5556">
-		<flow-ref doc:name="Get all batches" doc:id="80c5583d-6071-42b6-be99-e2671f1b17b9" name="get-all-batches" />
-		<ee:transform doc:name="Empty array for notes variable" doc:id="91c91f81-3b15-4e28-b9c4-2245c96a08de">
+		<flow-ref doc:name="References Get All Batches" doc:id="80c5583d-6071-42b6-be99-e2671f1b17b9" name="get-all-batches" />
+		<ee:transform doc:name="Empty Array For Notes Variable" doc:id="91c91f81-3b15-4e28-b9c4-2245c96a08de">
 			<ee:message />
 			<ee:variables>
 				<ee:set-variable variableName="notes"><![CDATA[%dw 2.0
@@ -211,7 +209,7 @@ output application/json
 []]]></ee:set-variable>
 			</ee:variables>
 		</ee:transform>
-		<ee:transform doc:name="Filter last year running batches" doc:id="502d30db-86f1-443d-b091-e2835ada9a93">
+		<ee:transform doc:name="Filter Last Year Running Batches" doc:id="502d30db-86f1-443d-b091-e2835ada9a93">
 			<ee:message>
 				<ee:set-payload resource="filterLastYearRunningBatches.dwl" />
 			</ee:message>
@@ -222,14 +220,14 @@ output application/json
 			</ee:message>
 		</ee:transform>
 		<foreach doc:name="For Each" doc:id="36b2449a-25c7-4f6d-97b4-db58c68927f4">
-			<ee:transform doc:name="Transform Message" doc:id="a8ac6f84-2e83-48fe-88f1-a5fad48a3d3e">
+			<ee:transform doc:name="Extract Payload To be An Array" doc:id="a8ac6f84-2e83-48fe-88f1-a5fad48a3d3e">
 				<ee:message>
 					<ee:set-payload resource="firstPartOfYearLoop.dwl" />
 				</ee:message>
 			</ee:transform>
 			<foreach doc:name="For Each" doc:id="5416a389-0faa-4f43-8d36-f8c9528be2c3">
-				<flow-ref doc:name="Flow Reference" doc:id="1f14c425-33bb-4a46-bb3d-1d7e79504c4c" name="get-notes-by-batch-id-and-week" target="result" targetValue="#[if(payload.currentWeek != null) [] else payload]" />
-				<ee:transform doc:name="Transform Message" doc:id="515744f3-63bf-469f-ab2d-cc4a55b929c7">
+				<flow-ref doc:name="References Get Notes By Batch Id And Week" doc:id="1f14c425-33bb-4a46-bb3d-1d7e79504c4c" name="get-notes-by-batch-id-and-week" target="result" targetValue="#[if(payload.currentWeek != null) [] else payload]" />
+				<ee:transform doc:name="Aggregate Notes" doc:id="515744f3-63bf-469f-ab2d-cc4a55b929c7">
 				<ee:message />
 				<ee:variables>
 					<ee:set-variable variableName="notes"><![CDATA[%dw 2.0
@@ -240,7 +238,7 @@ vars.notes ++ vars.result]]></ee:set-variable>
 			</ee:transform>
 			</foreach>
 		</foreach>
-		<flow-ref doc:name="Get all batches" doc:id="620de331-d2d8-416b-8791-11e790c75bdf" name="get-all-batches" />
+		<flow-ref doc:name="References Get All Batches" doc:id="620de331-d2d8-416b-8791-11e790c75bdf" name="get-all-batches" />
 		<ee:transform doc:name="Filter Batches Who Started Before Current Date Or Endded A Year Ago" doc:id="b05a4b13-72fc-4d69-9c1c-ae2a5e583207">
 			<ee:message>
 				<ee:set-payload resource="filterBatchesBetweenTodayAndLastYear.dwl" />
@@ -248,8 +246,8 @@ vars.notes ++ vars.result]]></ee:set-variable>
 		</ee:transform>
 		<logger level="INFO" doc:name="Logger" doc:id="e26043c8-ca6f-49cb-837c-5ced68cb79cb" />
 		<foreach doc:name="For Each" doc:id="03bf8656-57cb-427c-886d-8425cc00adb1">
-			<flow-ref doc:name="Flow Reference" doc:id="592d5387-bbeb-48f1-bd73-b9a6423ccdc4" name="get-notes-by-batch-id" target="result" />
-			<ee:transform doc:name="Transform Message" doc:id="8642c668-8821-4a7c-ab85-594329017713">
+			<flow-ref doc:name="References Get Notes By Batch Id" doc:id="592d5387-bbeb-48f1-bd73-b9a6423ccdc4" name="get-notes-by-batch-id" target="result" />
+			<ee:transform doc:name="Aggregtae Notes" doc:id="8642c668-8821-4a7c-ab85-594329017713">
 				<ee:message />
 				<ee:variables>
 					<ee:set-variable variableName="notes"><![CDATA[%dw 2.0
@@ -259,7 +257,7 @@ vars.notes ++ vars.result]]></ee:set-variable>
 				</ee:variables>
 			</ee:transform>
 		</foreach>
-		<flow-ref doc:name="Get all batches" doc:id="6a0ccbae-550f-4da6-a395-475dde741aa6" name="get-all-batches" />
+		<flow-ref doc:name="References Get All Batches" doc:id="6a0ccbae-550f-4da6-a395-475dde741aa6" name="get-all-batches" />
 		<ee:transform doc:name="Filter Running Batches" doc:id="f246ea4b-d920-4b3a-8c03-a929d48503ae">
 			<ee:message>
 				<ee:set-payload resource="filterCurrentWeekBatches.dwl" />
@@ -271,14 +269,14 @@ vars.notes ++ vars.result]]></ee:set-variable>
 			</ee:message>
 		</ee:transform>
 		<foreach doc:name="For Each" doc:id="4acaa917-055b-439c-a37f-f988a5b313c2">
-			<ee:transform doc:name="Transform Message" doc:id="904d983c-e591-4a41-8dd7-8dc6f7f23ed1">
+			<ee:transform doc:name="Extract Payload To Be An Array" doc:id="904d983c-e591-4a41-8dd7-8dc6f7f23ed1">
 				<ee:message>
 					<ee:set-payload resource="lastPartOfYearLoop.dwl" />
 				</ee:message>
 			</ee:transform>
 			<foreach doc:name="For Each" doc:id="7731606b-50a0-48c3-a888-aa4ecad75d2f">
-				<flow-ref doc:name="Flow Reference" doc:id="dc6e4799-41e3-446d-922f-aa2dc5740d9f" name="get-notes-by-batch-id-and-week" target="result" targetValue="#[if(payload.currentWeek != null) [] else payload]" />
-				<ee:transform doc:name="Transform Message" doc:id="62ca01a1-f668-4218-886d-2359868cfb6f">
+				<flow-ref doc:name="References Get Notes By Batch Id And Week" doc:id="dc6e4799-41e3-446d-922f-aa2dc5740d9f" name="get-notes-by-batch-id-and-week" target="result" targetValue="#[if(payload.currentWeek != null) [] else payload]" />
+				<ee:transform doc:name="Aggregate Notes" doc:id="62ca01a1-f668-4218-886d-2359868cfb6f">
 					<ee:message />
 					<ee:variables>
 						<ee:set-variable variableName="notes"><![CDATA[%dw 2.0
@@ -289,19 +287,19 @@ vars.notes ++ vars.result]]></ee:set-variable>
 				</ee:transform>
 			</foreach>
 		</foreach>
-		<set-payload value="#[vars.notes]" doc:name="Set Payload" doc:id="be47af13-c38f-4e8b-9e73-d37f8996bb15" />
+		<set-payload value="#[vars.notes]" doc:name="Set Payload To Notes" doc:id="be47af13-c38f-4e8b-9e73-d37f8996bb15" />
 		<logger level="INFO" doc:name="Logger" doc:id="b2daec3a-2799-4a3f-92d1-8678685c4426" message="#[payload]" />
-		<flow-ref doc:name="Flow Reference" doc:id="57b246f2-a327-4904-a268-ee26271f12c8" name="process-percentages" />
+		<flow-ref doc:name="References Process Percentages" doc:id="57b246f2-a327-4904-a268-ee26271f12c8" name="process-percentages" />
 	</flow>
 	<flow name="get-year-percentage" doc:id="424c76b0-2b15-4201-9e2e-13a39a7a5e4e">
-		<flow-ref doc:name="Flow Reference" doc:id="da50af4b-67fc-4bc6-a845-692ba1694b95" name="get-all-batches" />
-		<ee:transform doc:name="Filter last year batches" doc:id="ba43a269-6e2c-44af-87dd-fc25b65cc434">
+		<flow-ref doc:name="References Get All Batches" doc:id="da50af4b-67fc-4bc6-a845-692ba1694b95" name="get-all-batches" />
+		<ee:transform doc:name="Filter Last Year Batches" doc:id="ba43a269-6e2c-44af-87dd-fc25b65cc434">
 			<ee:message>
 				<ee:set-payload resource="filterYearBatches.dwl" />
 			</ee:message>
 		</ee:transform>
 		<logger level="INFO" doc:name="Logger" doc:id="1f81c249-e0a2-42b4-8d7e-cee375494265" />
-		<ee:transform doc:name="Empty array for notes variable" doc:id="4d72c78d-fd27-4a59-b3b0-6e928a807e66" >
+		<ee:transform doc:name="Empty Array For Notes Variable" doc:id="4d72c78d-fd27-4a59-b3b0-6e928a807e66" >
 			<ee:message />
 			<ee:variables >
 				<ee:set-variable variableName="notes" ><![CDATA[%dw 2.0
@@ -311,8 +309,8 @@ output application/json
 			</ee:variables>
 		</ee:transform>
 		<foreach doc:name="For Each" doc:id="7941c3c8-01b4-41ee-a7d8-011d92ffdc8b" >
-			<flow-ref doc:name="Get notes by batch id" doc:id="03a91583-d7d7-4ba3-99d3-1ae304d55f81" name="get-notes-by-batch-id" target="result"/>
-			<ee:transform doc:name="Transform Message" doc:id="3748d80c-a3db-496d-91db-c5dee1962477" >
+			<flow-ref doc:name="References Get Notes By Batch Id" doc:id="03a91583-d7d7-4ba3-99d3-1ae304d55f81" name="get-notes-by-batch-id" target="result"/>
+			<ee:transform doc:name="Aggregate Notes" doc:id="3748d80c-a3db-496d-91db-c5dee1962477" >
 				<ee:message />
 				<ee:variables >
 					<ee:set-variable variableName="notes" ><![CDATA[%dw 2.0
@@ -322,9 +320,9 @@ vars.notes ++ vars.result]]></ee:set-variable>
 				</ee:variables>
 			</ee:transform>
 		</foreach>
-		<set-payload value="#[vars.notes]" doc:name="Set Payload" doc:id="efa667ed-0bdd-4afe-8792-dfac4537ff79" />
+		<set-payload value="#[vars.notes]" doc:name="Set Payload To Notes" doc:id="efa667ed-0bdd-4afe-8792-dfac4537ff79" />
 		<logger level="INFO" doc:name="Logger" doc:id="b0db16c2-f879-44ae-8ba1-49043bf7c9b2" message="#[payload]" />
-		<flow-ref doc:name="Flow Reference" doc:id="8c00fe7f-794c-4950-b508-c8f7a753c2a3" name="process-percentages" />
+		<flow-ref doc:name="References Process Percentages" doc:id="8c00fe7f-794c-4950-b508-c8f7a753c2a3" name="process-percentages" />
 	</flow>
 	<flow name="get-notes-by-batch-id-and-week" doc:id="b77fdcfc-e2c4-4c48-89d3-537ebafdf944">
 		<qc-system-api:get-notes-by-batch-id-and-week doc:name="Get Notes By Batch ID and Week" doc:id="af78f00e-8d04-489a-b2c7-1b69ded155e8" config-ref="QC_System_API_Config" batch-id="#[payload.id]" week="#[payload.currentWeek]" />
@@ -343,9 +341,9 @@ vars.notes ++ vars.result]]></ee:set-variable>
 	
 	
 	<flow name="get-comparison" doc:id="a7e40098-4b76-4246-9d1e-62baf308ec6a" >
-		<set-variable value="#[upper(message.attributes.uriParams.'period')]" doc:name="period" doc:id="9c4c485c-b3b5-4632-9059-1bc52653ece7" variableName="period" />
-		<flow-ref doc:name="Flow Reference" doc:id="91c6ddef-f765-41f6-b2e3-383454e24526" name="get-current-week-percentage" />
-		<ee:transform doc:name="Transform Message" doc:id="6fd825ba-1b2a-4874-accc-e44d79ba96ad">
+		<set-variable value="#[upper(message.attributes.uriParams.'period')]" doc:name="setPeriod" doc:id="9c4c485c-b3b5-4632-9059-1bc52653ece7" variableName="period" />
+		<flow-ref doc:name="References Get Current Week Percentages" doc:id="91c6ddef-f765-41f6-b2e3-383454e24526" name="get-current-week-percentage" />
+		<ee:transform doc:name="Set Default Payload Variable" doc:id="6fd825ba-1b2a-4874-accc-e44d79ba96ad">
 			<ee:message />
 			<ee:variables>
 				<ee:set-variable resource="defaultPayloadVar.dwl" variableName="defaultPayload" />
@@ -355,16 +353,16 @@ vars.notes ++ vars.result]]></ee:set-variable>
 		<logger level="INFO" doc:name="Logger" doc:id="8276b221-ab24-44aa-83d5-5f60fd876ade" message="#[payload]" />
 		<choice doc:name="Router based on period" doc:id="902f2b00-c871-42da-827d-7243ad0f5149" >
 			<when expression="#[vars.period == 'ALL']" >
-				<flow-ref doc:name="Flow Reference" doc:id="c55b619a-c8bd-4372-9d35-d225930e378f" name="compare-current-week-with-all-time" />
+				<flow-ref doc:name="References Compare Current Week With All Time" doc:id="c55b619a-c8bd-4372-9d35-d225930e378f" name="compare-current-week-with-all-time" />
 			</when>
 			<when expression="#[vars.period == 'WEEK']" >
-				<flow-ref doc:name="Flow Reference" doc:id="0c945230-9fc0-415a-8e7c-1a865a72be47" name="compare-current-week-with-last-week" />
+				<flow-ref doc:name="References Compare Current Week With Last Week" doc:id="0c945230-9fc0-415a-8e7c-1a865a72be47" name="compare-current-week-with-last-week" />
 			</when>
 			<when expression='#[vars.period == "YEAR"]' >
-				<flow-ref doc:name="Flow Reference" doc:id="e2c30a77-a3b6-4a76-b652-c11bc3bbd2bd" name="compare-current-week-with-year" />
+				<flow-ref doc:name="References Compare Current Week With Last Year" doc:id="e2c30a77-a3b6-4a76-b652-c11bc3bbd2bd" name="compare-current-week-with-year" />
 			</when>
 			<otherwise >
-				<set-payload value='#["uri parameter should be all, week, or year"]' doc:name="Set Payload" doc:id="d68b1e6d-3675-460f-bae7-51b27e750693" />
+				<set-payload value='#["uri parameter should be all, week, or year"]' doc:name="Set Payload To Inform User Correct Input" doc:id="d68b1e6d-3675-460f-bae7-51b27e750693" />
 			</otherwise>
 		</choice>
 	</flow>
@@ -372,14 +370,14 @@ vars.notes ++ vars.result]]></ee:set-variable>
 	
 	
 	<flow name="compare-current-week-with-all-time" doc:id="e396e6fa-ba7d-4fef-87a1-38669e3d3691" >
-		<flow-ref doc:name="Flow Reference" doc:id="76eefa4e-70dd-43c3-9b75-de28e74ea9a7" name="get-all-time-percentage" />
-		<set-variable value='#[if(payload == "Records Not Found") vars.defaultPayload else payload]' doc:name="Set All Time Percentage" doc:id="e789d40a-1d7d-4bff-94c0-e9594ffc6187" variableName="AllTimePercentages" />
-		<ee:transform doc:name="Transform Message" doc:id="573f1326-be09-4b5e-8cd5-8aa8db6c75de" >
+		<flow-ref doc:name="References Get All Time Percentages" doc:id="76eefa4e-70dd-43c3-9b75-de28e74ea9a7" name="get-all-time-percentage" />
+		<set-variable value='#[if(payload == "Records Not Found") vars.defaultPayload else payload]' doc:name="Set All Time Percentages" doc:id="e789d40a-1d7d-4bff-94c0-e9594ffc6187" variableName="AllTimePercentages" />
+		<ee:transform doc:name="Find Percentage Differences" doc:id="573f1326-be09-4b5e-8cd5-8aa8db6c75de" >
 			<ee:message >
 				<ee:set-payload resource="findPerDifferenceAllTime.dwl" />
 			</ee:message>
 		</ee:transform>
-		<ee:transform doc:name="Transform Message" doc:id="25310fc8-84fc-4135-9d99-f51809a21905" >
+		<ee:transform doc:name="Format Changes Of Percentages" doc:id="25310fc8-84fc-4135-9d99-f51809a21905" >
 			<ee:message >
 				<ee:set-payload resource="finalPerChangeResult.dwl" />
 			</ee:message>
@@ -390,14 +388,14 @@ vars.notes ++ vars.result]]></ee:set-variable>
 	
 	
 	<flow name="compare-current-week-with-last-week" doc:id="e86801b0-db64-4d41-b888-7ea34615bc2b" >
-		<flow-ref doc:name="Flow Reference" doc:id="2e08b16c-db1d-4778-a769-3bd885f60b8b" name="get-last-week-percentages" />
-		<set-variable value='#[if(payload == "Records Not Found") vars.defaultPayload else payload]' doc:name="Set Last Week Percentage" doc:id="3bb9d2f0-5b33-45e8-8618-9d3b4231506d" variableName="LastWeekPercentages" />
-		<ee:transform doc:name="Transform Message" doc:id="f71dcd5c-5b87-4566-9e4f-9b726d514d46" >
+		<flow-ref doc:name="References Get Last Week Percentages" doc:id="2e08b16c-db1d-4778-a769-3bd885f60b8b" name="get-last-week-percentages" />
+		<set-variable value='#[if(payload == "Records Not Found") vars.defaultPayload else payload]' doc:name="Set Last Week Percentages" doc:id="3bb9d2f0-5b33-45e8-8618-9d3b4231506d" variableName="LastWeekPercentages" />
+		<ee:transform doc:name="Find Percentage Differneces" doc:id="f71dcd5c-5b87-4566-9e4f-9b726d514d46" >
 			<ee:message >
 				<ee:set-payload resource="findPerDifferenceLastWeek.dwl" />
 			</ee:message>
 		</ee:transform>
-		<ee:transform doc:name="Transform Message" doc:id="81487416-0286-49df-8fde-55120ff5be11" >
+		<ee:transform doc:name="Format Changes Of Percentages" doc:id="81487416-0286-49df-8fde-55120ff5be11" >
 			<ee:message >
 				<ee:set-payload resource="finalPerChangeResult.dwl" />
 			</ee:message>
@@ -408,14 +406,14 @@ vars.notes ++ vars.result]]></ee:set-variable>
 	
 	
 	<flow name="compare-current-week-with-year" doc:id="692d0daf-7013-49e4-8702-62c1bef28fdc" >
-		<flow-ref doc:name="Flow Reference" doc:id="34e14e94-3488-4fd4-a589-1fd4078885c6" name="get-last-year-percentage" />
+		<flow-ref doc:name="References Get Last Year Percentages" doc:id="34e14e94-3488-4fd4-a589-1fd4078885c6" name="get-last-year-percentage" />
 		<set-variable value='#[if(payload == "Records Not Found") vars.defaultPayload else payload]' doc:name="Set Last Year Percentages" doc:id="cfee9adb-77b9-4b02-8f0a-abc7a3dfebf5" variableName="LastYearPercentages" />
-		<ee:transform doc:name="Transform Message" doc:id="304cee8f-a664-4f42-98e4-b0e3c05405c1" >
+		<ee:transform doc:name="Find Percentage Differences" doc:id="304cee8f-a664-4f42-98e4-b0e3c05405c1" >
 			<ee:message >
 				<ee:set-payload resource="findPerDifferenceLastYear.dwl" />
 			</ee:message>
 		</ee:transform>
-		<ee:transform doc:name="Transform Message" doc:id="a2c37ce4-f598-4270-b417-829f5da8cfd6" >
+		<ee:transform doc:name="Format Changes Of Percentages" doc:id="a2c37ce4-f598-4270-b417-829f5da8cfd6" >
 			<ee:message >
 				<ee:set-payload resource="finalPerChangeResult.dwl" />
 			</ee:message>

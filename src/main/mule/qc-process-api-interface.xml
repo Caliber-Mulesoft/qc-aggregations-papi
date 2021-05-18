@@ -155,13 +155,13 @@ output application/json
 	</flow>
 	<flow name="get:\compare\(period):qc-process-api-config">
 		<flow-ref
-			doc:name="Flow Reference"
+			doc:name="References Get Comparison"
 			doc:id="59f69f83-5f8a-4438-b191-c20b1d165dfb"
 			name="get-comparison" />
 	</flow>
 	<flow name="get:\percentage\(period):qc-process-api-config">
 		<flow-ref
-			doc:name="Flow Reference"
+			doc:name="References Get Percentages"
 			doc:id="6a8a92e8-a653-4c4d-9e10-c6afad13eb15"
 			name="get-percentage" />
 	</flow>
