@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:qc-system-api="http://www.mulesoft.org/schema/mule/qc-system-api" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/qc-system-api http://www.mulesoft.org/schema/mule/qc-system-api/current/mule-qc-system-api.xsd">
+	<qc-system-api:config name="QC_System_API_Config" doc:name="QC System API Config" doc:id="cca97966-8953-4c0e-97b1-5eb016b7a737" />
+</mule>

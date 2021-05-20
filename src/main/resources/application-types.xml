@@ -1,0 +1,113 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
+  <types:catalog>
+    <types:type name="qc_system_api_notes_json" format="json">
+      <types:shape format="weave" example="caliberNotes.json"><![CDATA[%dw 2.0
+
+type qc_system_api_notes_json = Array<{|  AssociateId: String,   BatchId: String,   Content: String,   CreatedOn: String,   EmployeeId: String,   LastUpdated: String,   NoteId: Number {"typeId": "int"},   TechnicalStatus: String,   Type: String,   Week: Number {"typeId": "int"}|}> {"example": "[{\\\"AssociateId\\\":\\\"TR-EE\\\",\\\"BatchId\\\":\\\"TR-1201\\\",\\\"Content\\\":\\\"This is a Qc batch note on week 1\\\",\\\"CreatedOn\\\":\\\"2021-04-22\\\",\\\"EmployeeId\\\":\\\"QC-User\\\",\\\"LastUpdated\\\":\\\"2021-04-28\\\",\\\"NoteId\\\":982,\\\"TechnicalStatus\\\":\\\"Poor\\\",\\\"Type\\\":\\\"QC_BATCH\\\",\\\"Week\\\":1}]"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="qc_system_api_batches_json" format="json">
+      <types:shape format="weave" example="batches.json"><![CDATA[%dw 2.0
+
+type qc_system_api_batches_json = Array<{|  BatchId: String,   StartDate: String,   EndDate: String|}> {"example": "[{\\\"BatchId\\\":\\\"TR-1201\\\",\\\"StartDate\\\":\\\"2021-02-22\\\",\\\"EndDate\\\":\\\"2021-05-15\\\"},{\\\"BatchId\\\":\\\"TR-1201\\\",\\\"StartDate\\\":\\\"2021-01-01\\\",\\\"EndDate\\\":\\\"2021-03-15\\\"}]"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="percentages_json" format="json">
+      <types:shape format="weave" example="percentages.json"><![CDATA[%dw 2.0
+
+type percentages_json = {|
+  PoorPer: String, 
+  AveragePer: String, 
+  GoodPer: String, 
+  SuperstarPer: String
+|} {"example": "{\\\"PoorPer\\\":\\\"31.11\\\",\\\"AveragePer\\\":\\\"28.89\\\",\\\"GoodPer\\\":\\\"40.00\\\",\\\"SuperstarPer\\\":\\\".00\\\"}"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="payload_id_and_week_json" format="json">
+      <types:shape format="weave" example="payloadIdAndWeek.json"><![CDATA[%dw 2.0
+
+type payload_id_and_week_json = Array<{|  id: String,   currentWeek: String|}> {"example": "[{\\\"id\\\":\\\"TR-1140\\\",\\\"currentWeek\\\":\\\"0\\\"}]"}
+
+]]></types:shape>
+    </types:type>
+  </types:catalog>
+  <types:enrichment select="#b047cd2b-6c8d-41ef-993a-8128f3c63ee2">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="qc_system_api_notes_json"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#d66db11a-8e98-4756-b10b-177354f0959d">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="qc_system_api_notes_json"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#573f1326-be09-4b5e-8cd5-8aa8db6c75de">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:variables>
+          <types:variable name="AllTimePercentages" type="percentages_json"/>
+          <types:variable name="CurrentWeekPercentages" type="percentages_json"/>
+        </types:variables>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#304cee8f-a664-4f42-98e4-b0e3c05405c1">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:variables>
+          <types:variable name="LastYearPercentages" type="percentages_json"/>
+          <types:variable name="CurrentWeekPercentages" type="percentages_json"/>
+        </types:variables>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#f71dcd5c-5b87-4566-9e4f-9b726d514d46">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:variables>
+          <types:variable name="CurrentWeekPercentages" type="percentages_json"/>
+          <types:variable name="LastWeekPercentages" type="percentages_json"/>
+        </types:variables>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#49766d66-d6f4-4756-bb4d-f82f72aa2a95">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="qc_system_api_notes_json"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#a2a47243-7272-4768-aafe-5aff36604b58">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="payload_id_and_week_json"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#6fd825ba-1b2a-4874-accc-e44d79ba96ad">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="percentages_json"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+</types:mule>

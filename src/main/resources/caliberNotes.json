@@ -1,0 +1,14 @@
+[
+  {
+    "AssociateId": "TR-EE",
+    "BatchId": "TR-1201",
+    "Content": "This is a Qc batch note on week 1",
+    "CreatedOn": "2021-04-22",
+    "EmployeeId": "QC-User",
+    "LastUpdated": "2021-04-28",
+    "NoteId": 982,
+    "TechnicalStatus": "Poor",
+    "Type": "QC_BATCH",
+    "Week": 1
+  }
+]
